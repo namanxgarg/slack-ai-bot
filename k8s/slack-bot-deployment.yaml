@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: slack-bot-deployment
+  labels:
+    app: slack-bot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: slack-bot
+  template:
+    metadata:
+      labels:
+        app: slack-bot
+    spec:
+      containers:
+      - name: slack-bot
+        image: your-docker-registry/slack-ai-bot:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: SLACK_SIGNING_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: slack-bot-secrets
+              key: signingSecret
+        - name: SLACK_BOT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: slack-bot-secrets
+              key: botToken
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: slack-bot-secrets
+              key: openaiKey
+        - name: PORT
+          value: "3000"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: slack-bot-secrets
+type: Opaque
+data:
+  signingSecret: INSERT_BASE64_ENCODED_SLACK_SIGNING_SECRET
+  botToken: INSERT_BASE64_ENCODED_SLACK_BOT_TOKEN
+  openaiKey: INSERT_BASE64_ENCODED_OPENAI_KEY
